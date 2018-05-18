@@ -1,0 +1,4 @@
+# MailTrigger4Jenkins
+邮件触发Jenkins构建测试项目
+
+用于解决无法进行远程调试的一个解决方案
