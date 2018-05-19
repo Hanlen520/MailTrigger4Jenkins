@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Suite" parallel="false">
+	<!-- 一个测试套束 -->
+	<!-- 一个完整的测试功能 -->
+	<!-- 一个完整的测试类 -->
+	<!-- 一个测试集 -->
+	<!-- 测试用例 -->
+	
+	<!-- 用于邮件检查的代码 -->
+	<test name="MailCollectCheck" preserve-order="true">
+		<classes>
+			<class name="com.cmic.PreMailCheck2TriggerJks.TargetMailCheck">
+				<methods>
+					<include name="initCheck" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+</suite>
+
