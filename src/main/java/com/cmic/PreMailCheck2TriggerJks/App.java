@@ -4,10 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
+import com.cmic.PreMailCheck2TriggerJks.util.SendMailUtil;
+
 @Tips(description = "用于进行一些初始化的操作")
 public class App {
 
-	static Properties pro;
+	public static Properties pro;
+	// 全局参数
+	public static String SENDER_MAIL;
+	public static String SENDER_GRANT_CODE;
+	public static String RECEIVE_GRANT_CODE;
+
 	static {
 		try {
 			pro = new Properties();
@@ -15,12 +25,31 @@ public class App {
 			InputStream in = ClassLoader.class.getResourceAsStream("/res/ini/mailinfo.properties");
 			pro.load(in);
 			in.close();
+			if (pro.getProperty("MAIL_HOST_TYPE").equals("139")) {
+				SENDER_MAIL = pro.getProperty("SENDER_MAIL", "18814127364@qq.com");
+				SENDER_GRANT_CODE = pro.getProperty("SENDER_GRANT_CODE");//
+				RECEIVE_GRANT_CODE = pro.getProperty("RECEIVE_GRANT_CODE");
+			} else {// 其他类型的邮箱
+				System.err.println("暂时不支持");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Hello World!");
+		// System.out.println("Hello World!");
+		try {
+			SendMailUtil.sendMailBy139("kiwi188141@163.com");
+		} catch (AddressException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

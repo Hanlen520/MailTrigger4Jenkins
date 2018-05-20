@@ -13,6 +13,8 @@
 			<class name="com.cmic.PreMailCheck2TriggerJks.TargetMailCheck">
 				<methods>
 					<include name="initCheck" />
+					<include name="checkSendMailCanUse" />
+					<include name="checkReceiveMailCanUse" />
 				</methods>
 			</class>
 		</classes>

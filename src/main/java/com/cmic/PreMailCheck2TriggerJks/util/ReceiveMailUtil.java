@@ -29,6 +29,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.mail.search.SearchTerm;
 
+import com.cmic.PreMailCheck2TriggerJks.App;
 import com.cmic.PreMailCheck2TriggerJks.Tips;
 
 @Tips(description = "接收邮件的工具类")
@@ -48,7 +49,7 @@ public class ReceiveMailUtil {
 		session.setDebug(false);
 		Store store = session.getStore("imap");
 		// 登陆认证
-		store.connect("imap.139.com", SENDER_MAIL_139, GRANT_PERMISSON_CODE_IMAP_139);
+		store.connect("imap.139.com", App.SENDER_MAIL, App.RECEIVE_GRANT_CODE);
 
 		// 获得收件箱
 		Folder folder = store.getFolder("INBOX");
@@ -90,8 +91,7 @@ public class ReceiveMailUtil {
 		session.setDebug(false);
 		Store store = session.getStore("imap");
 		// 登陆认证
-		store.connect("imap.qq.com", SENDER_MAIL, GRANT_PERMISSON_CODE_IMAP);
-
+		store.connect("imap.qq.com", App.SENDER_MAIL, App.RECEIVE_GRANT_CODE);
 		// 获得收件箱
 		Folder folder = store.getFolder("INBOX");
 		// Folder.READ_ONLY：只读权限 Folder.READ_WRITE：可读可写（可以修改邮件的状态）
@@ -136,7 +136,7 @@ public class ReceiveMailUtil {
 		session.setDebug(false);
 		Store store = session.getStore("imap");
 		// 登陆认证
-		store.connect("imap.qq.com", SENDER_MAIL, GRANT_PERMISSON_CODE_IMAP);
+		store.connect("imap.qq.com", App.SENDER_MAIL, App.RECEIVE_GRANT_CODE);
 
 		// 获得收件箱
 		Folder folder = store.getFolder("INBOX");
@@ -182,7 +182,7 @@ public class ReceiveMailUtil {
 
 		Session session = Session.getDefaultInstance(properties);
 		Store store = session.getStore("pop3");
-		store.connect("pop.qq.com", SENDER_MAIL, GRANT_PERMISSON_CODE_POP3);
+		store.connect("pop.qq.com", App.SENDER_MAIL, App.RECEIVE_GRANT_CODE);
 
 		// 获得收件箱
 		Folder folder = store.getFolder("INBOX");

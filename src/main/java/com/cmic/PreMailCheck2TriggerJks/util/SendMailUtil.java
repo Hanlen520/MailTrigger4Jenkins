@@ -11,6 +11,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 
+import com.cmic.PreMailCheck2TriggerJks.App;
+
 public class SendMailUtil {
 
 	public static void sendMailBy139(String receiverMail) throws AddressException, MessagingException {
@@ -29,7 +31,7 @@ public class SendMailUtil {
 		// 获取邮件对象
 		Message message = new MimeMessage(session);
 		// 设置发件人邮箱地址
-		message.setFrom(new InternetAddress(SENDER_MAIL_139));// 本人的邮箱
+		message.setFrom(new InternetAddress(App.SENDER_MAIL));// 本人的邮箱
 		// 设置收件人地址
 		message.setRecipients(RecipientType.TO, new InternetAddress[] { new InternetAddress(receiverMail) });
 		// 设置邮件标题
@@ -39,7 +41,7 @@ public class SendMailUtil {
 		// 得到邮差对象
 		Transport transport = session.getTransport();
 		// 连接自己的邮箱账户
-		transport.connect(SENDER_MAIL_139, GRANT_PERMISSON_CODE_139);// 密码为刚才得到的授权码
+		transport.connect(App.SENDER_MAIL, App.SENDER_GRANT_CODE);// 密码为刚才得到的授权码
 		// 发送邮件
 		transport.sendMessage(message, message.getAllRecipients());
 	}
@@ -60,7 +62,7 @@ public class SendMailUtil {
 		// 获取邮件对象
 		Message message = new MimeMessage(session);
 		// 设置发件人邮箱地址
-		message.setFrom(new InternetAddress(SENDER_MAIL));// 本人的邮箱
+		message.setFrom(new InternetAddress(App.SENDER_MAIL));// 本人的邮箱
 		// 设置收件人地址
 		message.setRecipients(RecipientType.TO, new InternetAddress[] { new InternetAddress(receiverMail) });
 		// 设置邮件标题
@@ -70,7 +72,7 @@ public class SendMailUtil {
 		// 得到邮差对象
 		Transport transport = session.getTransport();
 		// 连接自己的邮箱账户
-		transport.connect(SENDER_MAIL, GRANT_PERMISSON_CODE);// 密码为刚才得到的授权码
+		transport.connect(App.SENDER_MAIL, App.SENDER_GRANT_CODE);// 密码为刚才得到的授权码
 		// 发送邮件
 		transport.sendMessage(message, message.getAllRecipients());
 	}
