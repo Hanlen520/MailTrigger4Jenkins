@@ -54,8 +54,9 @@ public class MailFilterFactory {
 				SimpleDateFormat sdf = new SimpleDateFormat("hh时mm分ss秒");
 				System.out.println(sdf.format(mondayDate));
 				SearchTerm comparisonTermGe = new SentDateTerm(ComparisonTerm.GE, mondayDate);
-				//SearchTerm comparisonTermLe = new SentDateTerm(ComparisonTerm., new Date());
-				//SearchTerm comparisonAndTerm = new AndTerm(comparisonTermGe, comparisonTermLe);
+				// SearchTerm comparisonTermLe = new SentDateTerm(ComparisonTerm., new Date());
+				// SearchTerm comparisonAndTerm = new AndTerm(comparisonTermGe,
+				// comparisonTermLe);
 				tempList.add(comparisonTermGe);
 			}
 			if (isNoEmpty(bodyContainString)) {

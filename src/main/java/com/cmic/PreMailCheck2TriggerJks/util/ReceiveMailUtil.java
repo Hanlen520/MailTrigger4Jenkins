@@ -7,7 +7,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -35,7 +37,7 @@ import com.cmic.PreMailCheck2TriggerJks.Tips;
 @Tips(description = "接收邮件的工具类")
 public class ReceiveMailUtil {
 
-	public static void receiveInImapWithFilterBy139(SearchTerm st) throws MessagingException, IOException {
+	public static void receiveInImapWithFilterBy139(SearchTerm st) throws Exception {
 		Properties properties = new Properties();
 
 		properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
@@ -50,7 +52,6 @@ public class ReceiveMailUtil {
 		Store store = session.getStore("imap");
 		// 登陆认证
 		store.connect("imap.139.com", App.SENDER_MAIL, App.RECEIVE_GRANT_CODE);
-
 		// 获得收件箱
 		Folder folder = store.getFolder("INBOX");
 		// Folder.READ_ONLY：只读权限 Folder.READ_WRITE：可读可写（可以修改邮件的状态）
@@ -77,7 +78,7 @@ public class ReceiveMailUtil {
 		store.close();
 	}
 
-	public static void receiveInImapWithFilterByQQ(SearchTerm st) throws MessagingException, IOException {
+	public static void receiveInImapWithFilterByQQ(SearchTerm st) throws Exception {
 		Properties properties = new Properties();
 
 		properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
@@ -218,8 +219,9 @@ public class ReceiveMailUtil {
 	 * 
 	 * @param messages
 	 *            要解析的邮件列表
+	 * @throws Exception
 	 */
-	public static void parseMessage(Message... messages) throws MessagingException, IOException {
+	public static void parseMessage(Message... messages) throws Exception {
 		if (messages == null || messages.length < 1)
 			System.err.println("未找到要解析的邮件!");
 
@@ -238,13 +240,16 @@ public class ReceiveMailUtil {
 			boolean isContainerAttachment = isContainAttachment(msg);
 			System.out.println("是否包含附件：" + isContainerAttachment);
 			// 暂存并解压
-			if (isContainerAttachment) {
-				try {
+			if (isContainerAttachment) {// 保存附件
+				if (App.ATTACHMENT_SAVE_DIR.isEmpty()) {// 默认路径
 					saveAttachment(msg, "D:\\Jenkins\\TestAutomation\\Parpare\\mailResultSave\\");
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} // 保存附件
+				} else {
+					LogUtil.e(App.ATTACHMENT_SAVE_DIR);
+					if (!App.ATTACHMENT_SAVE_DIR.endsWith(File.separator)) {
+						saveAttachment(msg, App.ATTACHMENT_SAVE_DIR + File.separator);
+					}
+					saveAttachment(msg, App.ATTACHMENT_SAVE_DIR);
+				}
 			}
 			StringBuffer content = new StringBuffer(30);
 			getMailTextContent(msg, content);
@@ -517,6 +522,16 @@ public class ReceiveMailUtil {
 				if (disp != null && (disp.equalsIgnoreCase(Part.ATTACHMENT) || disp.equalsIgnoreCase(Part.INLINE))) {
 					InputStream is = bodyPart.getInputStream();
 					saveFile(is, destDir, decodeText(bodyPart.getFileName()));
+					String saveDir = destDir + File.separator + decodeText(bodyPart.getFileName());
+					// 保存构建物体
+					if(!new File("apps").exists()) {
+						new File("apps").mkdirs();
+					}
+					File archiveDir = new File("apps" + File.separator + decodeText(bodyPart.getFileName()));
+					LogUtil.e("构建物另存为{}", archiveDir.getAbsolutePath());
+					//FileUtil.copyFileUsingFileChannels(new File(saveDir), archiveDir);
+					Files.copy(new File(saveDir).toPath(), new FileOutputStream(archiveDir.getAbsolutePath()));
+					 //FileUtils.copyFile(source, dest);
 					// 解压
 					DeCompressUtil.unzip(destDir + File.separator + decodeText(bodyPart.getFileName()),
 							destDir + File.separator + "RawAttachment", false);

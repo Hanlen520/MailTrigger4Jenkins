@@ -7,6 +7,9 @@ import java.util.Properties;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
+import org.apache.log4j.PropertyConfigurator;
+
+import com.cmic.PreMailCheck2TriggerJks.util.LogUtil;
 import com.cmic.PreMailCheck2TriggerJks.util.SendMailUtil;
 
 @Tips(description = "用于进行一些初始化的操作")
@@ -17,6 +20,8 @@ public class App {
 	public static String SENDER_MAIL;
 	public static String SENDER_GRANT_CODE;
 	public static String RECEIVE_GRANT_CODE;
+
+	public static String ATTACHMENT_SAVE_DIR;
 
 	static {
 		try {
@@ -32,6 +37,8 @@ public class App {
 			} else {// 其他类型的邮箱
 				System.err.println("暂时不支持");
 			}
+			ATTACHMENT_SAVE_DIR = pro.getProperty("ATTACH_SAVEPATH");
+			LogUtil.i("附件保存位置{}", ATTACHMENT_SAVE_DIR);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
