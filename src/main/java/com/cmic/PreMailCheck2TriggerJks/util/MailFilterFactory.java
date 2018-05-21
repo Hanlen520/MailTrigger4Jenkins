@@ -51,9 +51,9 @@ public class MailFilterFactory {
 			}
 			if (timeAgo != null) {
 				Date mondayDate = timeAgo.getTime();
-				SimpleDateFormat sdf = new SimpleDateFormat("hh时mm分ss秒");
+				SimpleDateFormat sdf = new SimpleDateFormat("hh时MM分ss秒");
 				System.out.println(sdf.format(mondayDate));
-				SearchTerm comparisonTermGe = new SentDateTerm(ComparisonTerm.GE, mondayDate);
+				SearchTerm comparisonTermGe = new SentDateTerm(ComparisonTerm.LE, mondayDate);
 				// SearchTerm comparisonTermLe = new SentDateTerm(ComparisonTerm., new Date());
 				// SearchTerm comparisonAndTerm = new AndTerm(comparisonTermGe,
 				// comparisonTermLe);

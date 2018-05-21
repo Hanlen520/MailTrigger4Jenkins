@@ -54,7 +54,8 @@ public class TargetMailCheck {
 		LogUtil.printCurrentMethodNameInLog4J();
 		try {
 			Calendar cl = Calendar.getInstance();
-			cl.set(Calendar.HOUR, cl.get(Calendar.HOUR) - 9);
+			cl.setTimeInMillis(System.currentTimeMillis() - 1000 * 60 * 60);
+			// cl.set(Calendar.HOUR, cl.get(Calendar.HOUR) - 1);
 			ReceiveMailUtil.receiveInImapWithFilterBy139(new MailFilterFactory.Builder()//
 					.setTimeRange(cl)//
 					.setSubject("Jks2自动测试")//

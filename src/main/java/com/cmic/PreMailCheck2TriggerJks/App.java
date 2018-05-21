@@ -7,8 +7,6 @@ import java.util.Properties;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
-import org.apache.log4j.PropertyConfigurator;
-
 import com.cmic.PreMailCheck2TriggerJks.util.LogUtil;
 import com.cmic.PreMailCheck2TriggerJks.util.SendMailUtil;
 
