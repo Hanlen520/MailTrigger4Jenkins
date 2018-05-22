@@ -1,23 +1,25 @@
 package com.cmic.PreMailCheck2TriggerJks.util;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import javax.mail.search.AndTerm;
-import javax.mail.search.ComparisonTerm;
+import javax.mail.search.BodyTerm;
 import javax.mail.search.FromStringTerm;
 import javax.mail.search.SearchTerm;
-import javax.mail.search.SentDateTerm;
 import javax.mail.search.SubjectTerm;
+
+import com.cmic.PreMailCheck2TriggerJks.Tips;
 
 public class MailFilterFactory {
 
+	@Tips(description = "由于sentDateTerm在实际使用中出现了过滤失败的问题，目前使用此方法处理")
+	public static Date mDateRange;
+
 	public static class Builder {
 		private String subject;// 主题
-		private Calendar timeAgo;// 日期之前
 		private String sender;// 发送者
 		private String bodyContainString;// 内容
 
@@ -36,8 +38,14 @@ public class MailFilterFactory {
 			return this;
 		}
 
-		public Builder setTimeRange(Calendar timeAgo) {
-			this.timeAgo = timeAgo;
+		/**
+		 * 当前到目标时间间隔这段时间段
+		 * 
+		 * @param timeAgo
+		 * @return
+		 */
+		public Builder setTimeRange2Now(Calendar timeAgo) {
+			mDateRange = timeAgo.getTime();
 			return this;
 		}
 
@@ -49,18 +57,8 @@ public class MailFilterFactory {
 			if (isNoEmpty(sender)) {
 				tempList.add(new FromStringTerm(sender));
 			}
-			if (timeAgo != null) {
-				Date mondayDate = timeAgo.getTime();
-				SimpleDateFormat sdf = new SimpleDateFormat("hh时MM分ss秒");
-				System.out.println(sdf.format(mondayDate));
-				SearchTerm comparisonTermGe = new SentDateTerm(ComparisonTerm.LE, mondayDate);
-				// SearchTerm comparisonTermLe = new SentDateTerm(ComparisonTerm., new Date());
-				// SearchTerm comparisonAndTerm = new AndTerm(comparisonTermGe,
-				// comparisonTermLe);
-				tempList.add(comparisonTermGe);
-			}
 			if (isNoEmpty(bodyContainString)) {
-				tempList.add(new SubjectTerm(subject));
+				tempList.add(new BodyTerm(bodyContainString));
 			}
 			SearchTerm[] temp = new SearchTerm[tempList.size()];
 			tempList.toArray(temp);

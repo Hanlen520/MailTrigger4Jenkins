@@ -2,15 +2,20 @@ package com.cmic.PreMailCheck2TriggerJks.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Address;
@@ -68,7 +73,7 @@ public class ReceiveMailUtil {
 		// 得到收件箱中的所有邮件,并解析
 		Message[] messages = folder.search(st);
 		int mailCounts = messages.length;
-		System.out.println("搜索过滤到" + mailCounts + " 封符合条件的邮件！");
+		LogUtil.i("初步过滤到{}封目标主题邮件!", mailCounts);
 		// 解析
 		parseMessage(messages);
 		// 释放资源
@@ -221,16 +226,37 @@ public class ReceiveMailUtil {
 	 */
 	public static void parseMessage(Message... messages) throws Exception {
 		if (messages == null || messages.length < 1)
-			System.err.println("未找到要解析的邮件!");
-
+			LogUtil.e("未找到要解析的邮件!");
+		Message[] resultMsg = sentDateFilter(messages);
 		// 解析所有邮件
-		for (int i = 0, count = messages.length; i < count; i++) {
-			MimeMessage msg = (MimeMessage) messages[i];
+		if (resultMsg.length <= 0) {
+			LogUtil.e("未找到要符合发送期限内的邮件!");
+			throw new RuntimeException("未找到要符合发送期限内的邮件!");
+		} else {
+			LogUtil.w("实际找到{}封符合条件的邮件", resultMsg.length);
+		}
+		Properties proSave = new Properties();
+		for (int i = 0; i < resultMsg.length; i++) {
+			// 初始化保存的文件
+			proSave.clear();
+			// 读取邮件
+			MimeMessage msg = (MimeMessage) resultMsg[i];
 			System.out.println("------------------解析第" + msg.getMessageNumber() + "封邮件-------------------- ");
-			System.out.println("主题: " + getSubject(msg));
-			System.out.println("发件人: " + getFrom(msg));
+			String mailSubject = getSubject(msg);
+			System.out.println("主题: " + mailSubject);
+			proSave.setProperty("TESTMAIL_SUBJECT", mailSubject);
+			String mailSender = getFrom(msg);
+			System.out.println("发件人: " + mailSender);
+			proSave.setProperty("TESTMAIL_SENDER", mailSender);
 			System.out.println("收件人：" + getReceiveAddress(msg, null));
-			System.out.println("发送时间：" + getSentDate(msg, null));
+			String sentTime = getSentDate(msg, null);
+			proSave.setProperty("TESTMAIL_SENTTIME", sentTime);
+			// 保存流
+			FileOutputStream out = new FileOutputStream(App.SHAREPROPERTYPATH);
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, "utf-8"));
+			proSave.store(bw, "");
+			out.close();
+			System.out.println("发送时间：" + sentTime);
 			System.out.println("是否已读：" + isSeen(msg));
 			System.out.println("邮件优先级：" + getPriority(msg));
 			System.out.println("是否需要回执：" + isReplySign(msg));
@@ -242,11 +268,11 @@ public class ReceiveMailUtil {
 				if (App.ATTACHMENT_SAVE_DIR.isEmpty()) {// 默认路径
 					saveAttachment(msg, "D:\\Jenkins\\TestAutomation\\Parpare\\mailResultSave\\");
 				} else {
-					LogUtil.e(App.ATTACHMENT_SAVE_DIR);
 					if (!App.ATTACHMENT_SAVE_DIR.endsWith(File.separator)) {
 						saveAttachment(msg, App.ATTACHMENT_SAVE_DIR + File.separator);
+					} else {
+						saveAttachment(msg, App.ATTACHMENT_SAVE_DIR);
 					}
-					saveAttachment(msg, App.ATTACHMENT_SAVE_DIR);
 				}
 			}
 			StringBuffer content = new StringBuffer(30);
@@ -254,6 +280,32 @@ public class ReceiveMailUtil {
 			System.out.println("邮件正文：" + (content.length() > 100 ? content.substring(0, 100) + "..." : content));
 			System.out.println("------------------第" + msg.getMessageNumber() + "封邮件解析结束-------------------- ");
 			System.out.println();
+		}
+	}
+
+	private static Message[] sentDateFilter(Message[] messages) throws MessagingException {
+		List<Message> filterResult = new ArrayList<Message>();
+		for (int i = 0; i < messages.length; i++) {
+			Date receivedDate = messages[i].getSentDate();
+			if (receivedDate == null) {
+				LogUtil.e("获取第{}封目标邮件{}失败", messages[i].getMessageNumber(), messages[i].getSubject());
+			} else if (receivedDate.after(MailFilterFactory.mDateRange)) {
+				filterResult.add(messages[i]);
+			}
+		}
+		Message[] msgArray = new Message[filterResult.size()];
+		filterResult.toArray(msgArray);
+		return msgArray;
+	}
+
+	@Tips(description = "由于无法存在SentDate过滤精度只能到达日期，折衷的方案", riskPoint = "不确定性")
+	private static boolean go2FilterBySentTime(MimeMessage msg) throws MessagingException {
+		Date receivedDate = msg.getSentDate();
+		if (receivedDate == null) {
+			System.err.println("获取邮件发送时间失败");
+			return false;
+		} else {
+			return receivedDate.after(MailFilterFactory.mDateRange);
 		}
 	}
 
@@ -521,15 +573,16 @@ public class ReceiveMailUtil {
 					InputStream is = bodyPart.getInputStream();
 					saveFile(is, destDir, decodeText(bodyPart.getFileName()));
 					String saveDir = destDir + File.separator + decodeText(bodyPart.getFileName());
-					// 保存构建物体
-					if(!new File("apps").exists()) {
+					// 另存为构建物体
+					if (!new File("apps").exists()) {// 另存路径
 						new File("apps").mkdirs();
 					}
 					File archiveDir = new File("apps" + File.separator + decodeText(bodyPart.getFileName()));
-					LogUtil.e("构建物另存为{}", archiveDir.getAbsolutePath());
-					//FileUtil.copyFileUsingFileChannels(new File(saveDir), archiveDir);
+					if (archiveDir.isFile()) {
+						archiveDir.delete();
+					}
+					LogUtil.i("构建物另存为{}", archiveDir.getAbsolutePath());
 					Files.copy(new File(saveDir).toPath(), new FileOutputStream(archiveDir.getAbsolutePath()));
-					 //FileUtils.copyFile(source, dest);
 					// 解压
 					DeCompressUtil.unzip(destDir + File.separator + decodeText(bodyPart.getFileName()),
 							destDir + File.separator + "RawAttachment", false);

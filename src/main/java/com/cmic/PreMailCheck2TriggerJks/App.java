@@ -1,5 +1,7 @@
 package com.cmic.PreMailCheck2TriggerJks;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -10,7 +12,7 @@ import javax.mail.internet.AddressException;
 import com.cmic.PreMailCheck2TriggerJks.util.LogUtil;
 import com.cmic.PreMailCheck2TriggerJks.util.SendMailUtil;
 
-@Tips(description = "用于进行一些初始化的操作")
+@Tips(description = "用于进行一些初始化的操作", riskPoint = "不支持并发")
 public class App {
 
 	public static Properties pro;
@@ -20,6 +22,9 @@ public class App {
 	public static String RECEIVE_GRANT_CODE;
 
 	public static String ATTACHMENT_SAVE_DIR;
+	public static String LOOPFREQUENCY;// 检查频率
+	public static String JENKINSHOME;// Jenkins目录，保存一些Job间共享的数据
+	public static String SHAREPROPERTYPATH;// 共享Proprety目录
 
 	static {
 		try {
@@ -32,18 +37,34 @@ public class App {
 				SENDER_MAIL = pro.getProperty("SENDER_MAIL", "18814127364@qq.com");
 				SENDER_GRANT_CODE = pro.getProperty("SENDER_GRANT_CODE");//
 				RECEIVE_GRANT_CODE = pro.getProperty("RECEIVE_GRANT_CODE");
+				LOOPFREQUENCY = pro.getProperty("LOOP_FREQUENCY", "180");// 检查频率
+				JENKINSHOME = pro.getProperty("JENKINS_HOME");// 检查频率
 			} else {// 其他类型的邮箱
 				System.err.println("暂时不支持");
 			}
+			if (JENKINSHOME != null && !JENKINSHOME.isEmpty()) {
+				File tempFile = new File(App.JENKINSHOME + File.separator + "tempProperty", "testInfo.properties");
+				if (!tempFile.exists()) {
+					// 先创建父级目录
+					tempFile.getParentFile().mkdir();
+					LogUtil.i(tempFile.getAbsolutePath());
+					// 创建文件
+					tempFile.createNewFile();
+				}
+				// 初始化保存的文件
+			}
+			SHAREPROPERTYPATH = App.JENKINSHOME + File.separator + "tempProperty" + File.separator
+					+ "testInfo.properties";
 			ATTACHMENT_SAVE_DIR = pro.getProperty("ATTACH_SAVEPATH");
 			LogUtil.i("附件保存位置{}", ATTACHMENT_SAVE_DIR);
+			// 检验
+			LogUtil.e("检验1{}", JENKINSHOME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void main(String[] args) {
-		// System.out.println("Hello World!");
 		try {
 			SendMailUtil.sendMailBy139("kiwi188141@163.com");
 		} catch (AddressException e) {

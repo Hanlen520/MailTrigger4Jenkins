@@ -16,6 +16,8 @@
 		<receiveRequestCode></receiveRequestCode>
 		<mailAccout></mailAccout>
 		<savePath></savePath>
+		<loopFrequency></loopFrequency>
+		<jenkinsHome></jenkinsHome>
 	</properties>
 
 	<dependencies>

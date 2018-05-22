@@ -6,7 +6,16 @@ import java.util.Properties;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
+import javax.mail.search.AndTerm;
+import javax.mail.search.ComparisonTerm;
+import javax.mail.search.DateTerm;
+import javax.mail.search.OrTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SentDateTerm;
+import javax.mail.search.SubjectTerm;
 
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import com.cmic.PreMailCheck2TriggerJks.util.LogUtil;
@@ -54,17 +63,22 @@ public class TargetMailCheck {
 		LogUtil.printCurrentMethodNameInLog4J();
 		try {
 			Calendar cl = Calendar.getInstance();
-			cl.setTimeInMillis(System.currentTimeMillis() - 1000 * 60 * 60);
-			// cl.set(Calendar.HOUR, cl.get(Calendar.HOUR) - 1);
+			cl.set(Calendar.MINUTE, cl.get(Calendar.MINUTE) - Integer.parseInt(App.LOOPFREQUENCY));// 默认在60分钟之内
+			LogUtil.w("设置的构建时间间隔为{}分钟", Integer.parseInt(App.LOOPFREQUENCY));
 			ReceiveMailUtil.receiveInImapWithFilterBy139(new MailFilterFactory.Builder()//
-					.setTimeRange(cl)//
 					.setSubject("Jks2自动测试")//
 					.setSender("李杰")//
+					.setTimeRange2Now(cl)//
 					.build());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new AssertionError();
 		}
+	}
+
+	@Tips(description = "进行一些数据存储 ")
+	@BeforeSuite
+	public void beforeSuit() {
+		
 	}
 }
