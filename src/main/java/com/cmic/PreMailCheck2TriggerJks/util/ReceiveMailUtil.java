@@ -36,6 +36,7 @@ import javax.mail.search.SearchTerm;
 
 import com.cmic.PreMailCheck2TriggerJks.App;
 import com.cmic.PreMailCheck2TriggerJks.Tips;
+import com.cmic.PreMailCheck2TriggerJks.bean.TestInfo;
 
 @Tips(description = "接收邮件的工具类")
 public class ReceiveMailUtil {
@@ -231,6 +232,7 @@ public class ReceiveMailUtil {
 		// 解析所有邮件
 		if (resultMsg.length <= 0) {
 			LogUtil.e("未找到要符合发送期限内的邮件!");
+			// 只是为了关闭Jenkins的工作流构建，抛出了异常
 			throw new RuntimeException("未找到要符合发送期限内的邮件!");
 		} else {
 			LogUtil.w("实际找到{}封符合条件的邮件", resultMsg.length);
@@ -252,10 +254,12 @@ public class ReceiveMailUtil {
 			String sentTime = getSentDate(msg, null);
 			proSave.setProperty("TESTMAIL_SENTTIME", sentTime);
 			// 保存流
-			FileOutputStream out = new FileOutputStream(App.SHAREPROPERTYPATH);
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, "utf-8"));
-			proSave.store(bw, "");
-			out.close();
+			if (new File(App.SHAREPROPERTYPATH).isFile()) {
+				FileOutputStream out = new FileOutputStream(App.SHAREPROPERTYPATH);
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, "utf-8"));
+				proSave.store(bw, "");
+				out.close();
+			}
 			System.out.println("发送时间：" + sentTime);
 			System.out.println("是否已读：" + isSeen(msg));
 			System.out.println("邮件优先级：" + getPriority(msg));
@@ -275,9 +279,19 @@ public class ReceiveMailUtil {
 					}
 				}
 			}
-			StringBuffer content = new StringBuffer(30);
+			StringBuilder content = new StringBuilder();
 			getMailTextContent(msg, content);
-			System.out.println("邮件正文：" + (content.length() > 100 ? content.substring(0, 100) + "..." : content));
+			System.out.println("邮件正文如下:");
+			int indexStart = content.indexOf("#ConfigStartFromHere");
+			int indexEnd = content.indexOf("#ConfigStartInHere");
+			if (indexEnd > 0 && indexStart > 0) {
+				String yamlString = content.substring(indexStart, indexEnd);
+				LogUtil.i(yamlString);
+				LogUtil.e("目标为{}",YamlUtil.yaml2Bean(yamlString, TestInfo.class).getTestSubscriber()[0]);
+			} else {
+				LogUtil.w("该自动化测试配置邮件模板有误");
+			}
+			System.out.println();
 			System.out.println("------------------第" + msg.getMessageNumber() + "封邮件解析结束-------------------- ");
 			System.out.println();
 		}
@@ -533,7 +547,7 @@ public class ReceiveMailUtil {
 	 * @throws MessagingException
 	 * @throws IOException
 	 */
-	public static void getMailTextContent(Part part, StringBuffer content) throws MessagingException, IOException {
+	public static void getMailTextContent(Part part, StringBuilder content) throws MessagingException, IOException {
 		// 如果是文本类型的附件，通过getContent方法可以取到文本内容，但这不是我们需要的结果，所以在这里要做判断
 		boolean isContainTextAttach = part.getContentType().indexOf("name") > 0;
 		if (part.isMimeType("text/*") && !isContainTextAttach) {

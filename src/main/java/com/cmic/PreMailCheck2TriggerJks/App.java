@@ -37,7 +37,7 @@ public class App {
 				SENDER_MAIL = pro.getProperty("SENDER_MAIL", "18814127364@qq.com");
 				SENDER_GRANT_CODE = pro.getProperty("SENDER_GRANT_CODE");//
 				RECEIVE_GRANT_CODE = pro.getProperty("RECEIVE_GRANT_CODE");
-				LOOPFREQUENCY = pro.getProperty("LOOP_FREQUENCY", "180");// 检查频率
+				LOOPFREQUENCY = pro.getProperty("LOOP_FREQUENCY", "20");// 检查频率
 				JENKINSHOME = pro.getProperty("JENKINS_HOME");// 检查频率
 			} else {// 其他类型的邮箱
 				System.err.println("暂时不支持");
@@ -56,9 +56,9 @@ public class App {
 			SHAREPROPERTYPATH = App.JENKINSHOME + File.separator + "tempProperty" + File.separator
 					+ "testInfo.properties";
 			ATTACHMENT_SAVE_DIR = pro.getProperty("ATTACH_SAVEPATH");
-			LogUtil.i("附件保存位置{}", ATTACHMENT_SAVE_DIR);
+			LogUtil.i("附件保存位置{}", ATTACHMENT_SAVE_DIR.isEmpty() ? "is empty" : ATTACHMENT_SAVE_DIR);
 			// 检验
-			LogUtil.e("检验1{}", JENKINSHOME);
+			LogUtil.e("JENKINSHOME的位置为{}", JENKINSHOME.isEmpty() ? "is empty" : JENKINSHOME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

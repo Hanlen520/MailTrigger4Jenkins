@@ -66,7 +66,7 @@ public class TargetMailCheck {
 			cl.set(Calendar.MINUTE, cl.get(Calendar.MINUTE) - Integer.parseInt(App.LOOPFREQUENCY));// 默认在60分钟之内
 			LogUtil.w("设置的构建时间间隔为{}分钟", Integer.parseInt(App.LOOPFREQUENCY));
 			ReceiveMailUtil.receiveInImapWithFilterBy139(new MailFilterFactory.Builder()//
-					.setSubject("Jks2自动测试")//
+					.setSubject("自动化测试")//
 					.setSender("李杰")//
 					.setTimeRange2Now(cl)//
 					.build());
