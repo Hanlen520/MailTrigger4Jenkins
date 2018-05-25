@@ -24,7 +24,7 @@ public class App {
 	public static String ATTACHMENT_SAVE_DIR;
 	public static String LOOPFREQUENCY;// 检查频率
 	public static String JENKINSHOME;// Jenkins目录，保存一些Job间共享的数据
-	public static String SHAREPROPERTYPATH;// 共享Proprety目录
+	public static String SHAREPROPERTYPATH;// 共享Proprety目录，保存项目构建的配置文件
 
 	static {
 		try {
@@ -56,9 +56,9 @@ public class App {
 			SHAREPROPERTYPATH = App.JENKINSHOME + File.separator + "tempProperty" + File.separator
 					+ "testInfo.properties";
 			ATTACHMENT_SAVE_DIR = pro.getProperty("ATTACH_SAVEPATH");
-			LogUtil.i("附件保存位置{}", ATTACHMENT_SAVE_DIR.isEmpty() ? "is empty" : ATTACHMENT_SAVE_DIR);
+			LogUtil.i("附件保存位置{}", ATTACHMENT_SAVE_DIR.isEmpty() ? "Is Empty" : ATTACHMENT_SAVE_DIR);
 			// 检验
-			LogUtil.e("JENKINSHOME的位置为{}", JENKINSHOME.isEmpty() ? "is empty" : JENKINSHOME);
+			LogUtil.e("JENKINSHOME的位置为{}", JENKINSHOME.isEmpty() ? "Is Empty" : JENKINSHOME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

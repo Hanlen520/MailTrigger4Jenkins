@@ -23,6 +23,7 @@ import com.cmic.PreMailCheck2TriggerJks.util.MailFilterFactory;
 import com.cmic.PreMailCheck2TriggerJks.util.ReceiveMailUtil;
 import com.cmic.PreMailCheck2TriggerJks.util.SendMailUtil;
 
+@Tips(description = "调起邮件轮询", riskPoint = "必须保证系统编码为Utf-8,保证邮件不乱码")
 public class TargetMailCheck {
 
 	@Tips(description = "用于进行初始化的测试")
@@ -79,6 +80,6 @@ public class TargetMailCheck {
 	@Tips(description = "进行一些数据存储 ")
 	@BeforeSuite
 	public void beforeSuit() {
-		
+
 	}
 }

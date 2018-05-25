@@ -36,6 +36,7 @@ import javax.mail.search.SearchTerm;
 
 import com.cmic.PreMailCheck2TriggerJks.App;
 import com.cmic.PreMailCheck2TriggerJks.Tips;
+import com.cmic.PreMailCheck2TriggerJks.bean.Device;
 import com.cmic.PreMailCheck2TriggerJks.bean.TestInfo;
 
 @Tips(description = "接收邮件的工具类")
@@ -248,18 +249,14 @@ public class ReceiveMailUtil {
 			System.out.println("主题: " + mailSubject);
 			proSave.setProperty("TESTMAIL_SUBJECT", mailSubject);
 			String mailSender = getFrom(msg);
-			System.out.println("发件人: " + mailSender);
-			proSave.setProperty("TESTMAIL_SENDER", mailSender);
+			// 发送者串格式化
+			String formatSender = mailSender.substring(mailSender.indexOf("<") + 1, mailSender.indexOf(">"));
+			System.out.println("发件人: " + formatSender);
+			proSave.setProperty("TESTMAIL_SENDER", formatSender);
 			System.out.println("收件人：" + getReceiveAddress(msg, null));
 			String sentTime = getSentDate(msg, null);
 			proSave.setProperty("TESTMAIL_SENTTIME", sentTime);
-			// 保存流
-			if (new File(App.SHAREPROPERTYPATH).isFile()) {
-				FileOutputStream out = new FileOutputStream(App.SHAREPROPERTYPATH);
-				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, "utf-8"));
-				proSave.store(bw, "");
-				out.close();
-			}
+			//
 			System.out.println("发送时间：" + sentTime);
 			System.out.println("是否已读：" + isSeen(msg));
 			System.out.println("邮件优先级：" + getPriority(msg));
@@ -283,13 +280,30 @@ public class ReceiveMailUtil {
 			getMailTextContent(msg, content);
 			System.out.println("邮件正文如下:");
 			int indexStart = content.indexOf("#ConfigStartFromHere");
-			int indexEnd = content.indexOf("#ConfigStartInHere");
-			if (indexEnd > 0 && indexStart > 0) {
+			int indexEnd = content.indexOf("#ConfigEndInHere");
+			if (indexEnd > 0 && indexStart >= 0) {
 				String yamlString = content.substring(indexStart, indexEnd);
 				LogUtil.i(yamlString);
-				LogUtil.e("目标为{}",YamlUtil.yaml2Bean(yamlString, TestInfo.class).getTestSubscriber()[0]);
+				// 得到配置邮件
+				TestInfo testInfo = YamlUtil.yaml2Bean(yamlString, TestInfo.class);// 目前只支持单个设备测试
+				Device deviceInfo = testInfo.getTestDeviceList()[0];
+				LogUtil.e("测试目标设备为{},型号为{}", deviceInfo.getDeviceName(), deviceInfo.getDeviceModelName());
+				// 目前只保存以下两个属性的值
+				proSave.setProperty("DEVICENAME", deviceInfo.getDeviceName());
+				proSave.setProperty("DEVICEMODEL", deviceInfo.getDeviceModelName());
 			} else {
-				LogUtil.w("该自动化测试配置邮件模板有误");
+				LogUtil.w("该自动化测试配置邮件模板有误{},{}", indexStart, indexEnd);
+			}
+			// 保存流
+			if (new File(App.SHAREPROPERTYPATH).isFile()) {
+				if (!new File(App.SHAREPROPERTYPATH).exists()) {
+					new File(App.SHAREPROPERTYPATH).mkdirs();
+					new File(App.SHAREPROPERTYPATH).createNewFile();
+				}
+				FileOutputStream out = new FileOutputStream(App.SHAREPROPERTYPATH);
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out, "utf-8"));
+				proSave.store(bw, "Commit4Jenkins");
+				out.close();
 			}
 			System.out.println();
 			System.out.println("------------------第" + msg.getMessageNumber() + "封邮件解析结束-------------------- ");
