@@ -1,0 +1,272 @@
+<!--本模板基于Jenknis自带模板 -->
+
+<STYLE>
+  BODY, TABLE, TD, TH, P {
+    font-family: Calibri, Verdana, Helvetica, sans serif;
+    font-size: 12px;
+    color: black;
+  }
+  .console {
+    font-family: Courier New;
+  }
+  .filesChanged {
+    width: 10%;
+    padding-left: 10px;
+  }
+  .section {
+    width: 100%;
+    border: thin black dotted;
+  }
+  .td-title-main {
+    color: white;
+    font-weight: bold;
+    font-size: 180%;
+    text-align:center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  .td-title {
+    color: white;
+    font-size: 120%;
+    font-weight: bold;
+    padding-left: 5px;
+    text-transform: uppercase;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+  .td-title-tests {
+    font-weight: bold;
+    font-size: 110%;
+  }
+  .td-title-tests-en {
+    font-weight: bold;
+    font-size: 110%;
+  }
+  .td-header-maven-module {
+    font-weight: bold;
+    font-size: 120%;    
+  }
+  .td-titie-teses-num{
+    padding-left: 15px;
+  }
+  .td-maven-artifact {
+  }
+  .tr-title {
+    background-color: <%= (build.result == null || build.result.toString() == 'SUCCESS') ? '#27AE60' : build.result.toString() == 'FAILURE' ? '#E74C3C' : '#f4e242' %>;
+  }
+  .test {
+    padding-left: 20px;
+  }
+  .test-fixed {
+    color: #27AE60;
+  }
+  .test-failed {
+    color: #E74C3C;
+  }
+</STYLE>
+<BODY>
+  <!-- BUILD RESULT -->
+  <table class="section">
+    <tr class="tr-title">
+      <td class="td-title-main" colspan=2>
+        自动化测试构建结果: ${build.result ?: 'COMPLETED'}
+      </td>
+    </tr>
+    <tr>
+      <td>项目链接</td>
+      <td><A href="${rooturl}${build.url}">${rooturl}${build.url}</A>(非系统用户不可见)</td>
+    </tr>
+    <tr>
+      <td>项目名称</td>
+      <td>${project.name}</td>
+    </tr>
+    <tr>
+      <td>构建日期</td>
+      <td>${it.timestampString}</td>
+    </tr>
+    <tr>
+      <td>构建时长</td>
+      <td>${build.durationString}</td>
+    </tr>
+    <tr>
+      <td>构建原因</td>
+      <td><% build.causes.each() { cause -> %> ${cause.shortDescription} <%  } %></td>
+    </tr>
+  </table>
+  <br/>
+
+  <!-- CHANGE SET -->
+  <%
+  def changeSets = build.changeSets
+  if(changeSets != null) {
+    def hadChanges = false %>
+  <table class="section">
+    <tr class="tr-title">
+      <td class="td-title" colspan="2">代码版本变动</td>
+    </tr>
+    <% changeSets.each() { 
+      cs_list -> cs_list.each() { 
+        cs -> hadChanges = true %>
+    <tr>
+      <td>
+        Revision
+        <%= cs.metaClass.hasProperty('commitId') ? cs.commitId : cs.metaClass.hasProperty('revision') ? cs.revision : cs.metaClass.hasProperty('changeNumber') ? cs.changeNumber : "" %>
+        by <B><%= cs.author %></B>
+      </td>
+      <td>${cs.msgAnnotated}</td>
+    </tr>
+        <% cs.affectedFiles.each() {
+          p -> %>
+    <tr>
+      <td class="filesChanged">${p.editType.name}</td>
+      <td>${p.path}</td>
+    </tr>
+        <% }
+      }
+    }
+    if ( !hadChanges ) { %>
+    <tr>
+      <td colspan="2">No Changes</td>
+    </tr>
+    <% } %>
+  </table>
+  <br/>
+  <% } %>
+
+<!-- ARTIFACTS -->
+  <% 
+  def artifacts = build.artifacts
+  if ( artifacts != null && artifacts.size() > 0 ) { %>
+  <table class="section">
+    <tr class="tr-title">
+      <td class="td-title" colspan="2">构建生成产物</td>
+    </tr>
+    <tr>
+      <td class="td-title-tests">系统用户</td>
+      <td class="td-title-tests">普通用户</td>
+    </tr>
+    <% artifacts.each() {
+      f -> %>
+      <tr>
+        <td>
+          <a href="${rooturl}${build.url}artifact/${f}">${f}</a>
+      </td>
+        <td>见邮件附件${f}</td>
+    </tr>
+    <% } %>
+  </table>
+  <br/>
+  <% } %>
+
+<!-- MAVEN ARTIFACTS -->
+  <%
+  try {
+    def mbuilds = build.moduleBuilds
+    if ( mbuilds != null ) { %>
+  <table class="section">
+    <tr class="tr-title">
+      <td class="td-title">MAVEN构建生成产物</td>
+    </tr>
+      <%
+      try {
+        mbuilds.each() {
+          m -> %>
+    <tr>
+      <td class="td-header-maven-module">${m.key.displayName}</td>
+    </tr>
+          <%
+          m.value.each() { 
+            mvnbld -> def artifactz = mvnbld.artifacts
+            if ( artifactz != null && artifactz.size() > 0) { %>
+    <tr>
+      <td class="td-maven-artifact">
+              <% artifactz.each() {
+                f -> %>
+        <a href="${rooturl}${mvnbld.url}artifact/${f}">${f}</a>(仅系统用户可访问)<br/>
+              <% } %>
+      </td>
+    </tr>
+            <% }
+          }
+        }
+      } catch(e) {
+        // we don't do anything
+      } %>
+  </table>
+  <br/>
+    <% }
+  } catch(e) {
+    // we don't do anything
+  } %>
+
+<!-- JUnit TEMPLATE -->
+
+  <%
+  def junitResultList = it.JUnitTestResult
+  try {
+    def cucumberTestResultAction = it.getAction("org.jenkinsci.plugins.cucumber.jsontestsupport.CucumberTestResultAction")
+    junitResultList.add( cucumberTestResultAction.getResult() )
+  } catch(e) {
+    //cucumberTestResultAction not exist in this build
+  }
+  if ( junitResultList.size() > 0 ) { %>
+  <table class="section">
+    <tr class="tr-title">
+      <td class="td-title" colspan="5">测试结果概览</td>
+    </tr>
+    <tr>
+        <td class="td-title-tests">测试用例集合</td>
+        <td class="td-title-tests-en">Failed</td>
+        <td class="td-title-tests-en">Passed</td>
+        <td class="td-title-tests-en">Skipped</td>
+        <td class="td-title-tests-en">Total</td>
+      </tr>
+    <% junitResultList.each {
+      junitResult -> junitResult.getChildren().each {
+        packageResult -> %>
+    <tr>
+      <td>${packageResult.getName()}</td>
+      <td class="td-titie-teses-num">${packageResult.getFailCount()}</td>
+      <td class="td-titie-teses-num">${packageResult.getPassCount()}</td>
+      <td class="td-titie-teses-num">${packageResult.getSkipCount()}</td>
+      <td class="td-titie-teses-num">${packageResult.getPassCount() + packageResult.getFailCount() + packageResult.getSkipCount()}</td>
+    </tr>
+    <% packageResult.getPassedTests().findAll({it.getStatus().toString() == "FIXED";}).each{
+        test -> %>
+            <tr>
+              <td class="test test-fixed" colspan="5">
+                ${test.getFullName()} ${test.getStatus()}
+              </td>
+            </tr>
+        <% } %>
+        <% packageResult.getFailedTests().sort({a,b -> a.getAge() <=> b.getAge()}).each{
+          failed_test -> %>
+    <tr>
+      <td class="test test-failed" colspan="5">
+        ${failed_test.getFullName()} (Age: ${failed_test.getAge()})
+      </td>
+    </tr>
+        <% }
+      }
+    } %>
+  </table>
+  <br/>
+  <% } %>
+
+<!-- CONSOLE OUTPUT -->
+  <%
+  if ( build.result == hudson.model.Result.FAILURE ) { %>
+  <table class="section" cellpadding="0" cellspacing="0">
+    <tr class="tr-title">
+      <td class="td-title">控制台输出</td>
+    </tr>
+    <% 	build.getLog(100).each() {
+      line -> %>
+	  <tr>
+      <td class="console">${org.apache.commons.lang.StringEscapeUtils.escapeHtml(line)}</td>
+    </tr>
+    <% } %>
+  </table>
+  <br/>
+  <% } %>
+</BODY>
