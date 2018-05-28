@@ -287,10 +287,19 @@ public class ReceiveMailUtil {
 				// 得到配置邮件
 				TestInfo testInfo = YamlUtil.yaml2Bean(yamlString, TestInfo.class);// 目前只支持单个设备测试
 				Device deviceInfo = testInfo.getTestDeviceList()[0];
-				LogUtil.e("测试目标设备为{},型号为{}", deviceInfo.getDeviceName(), deviceInfo.getDeviceModelName());
+				LogUtil.w("测试目标设备为{},型号为{}", deviceInfo.getDeviceName(), deviceInfo.getDeviceModelName());
 				// 目前只保存以下两个属性的值
 				proSave.setProperty("DEVICENAME", deviceInfo.getDeviceName());
 				proSave.setProperty("DEVICEMODEL", deviceInfo.getDeviceModelName());
+
+				StringBuilder subscribeList = new StringBuilder();
+				for (int j = 0; j < testInfo.getTestSubscriber().length; j++) {
+					subscribeList.append(testInfo.getTestSubscriber()[j]);
+					subscribeList.append(",");
+				}
+				proSave.setProperty("REPORTSUBSCRIBER",
+						subscribeList.deleteCharAt(subscribeList.length() - 1).toString());
+
 			} else {
 				LogUtil.w("该自动化测试配置邮件模板有误{},{}", indexStart, indexEnd);
 			}
@@ -309,6 +318,7 @@ public class ReceiveMailUtil {
 			System.out.println("------------------第" + msg.getMessageNumber() + "封邮件解析结束-------------------- ");
 			System.out.println();
 		}
+
 	}
 
 	private static Message[] sentDateFilter(Message[] messages) throws MessagingException {

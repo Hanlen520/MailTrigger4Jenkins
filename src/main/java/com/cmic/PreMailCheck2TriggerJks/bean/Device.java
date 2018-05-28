@@ -7,7 +7,8 @@ public class Device {
 	private String deviceName;// 设备名称
 	private String deviceModelName;// 设备型号
 	private int deviceSDK;
-	private String deviceUid;// 有待删除
+	@Tips(description="暂时删除，减少用户配置")
+	//private String deviceUid;// 有待删除
 
 	public String getDeviceName() {
 		return deviceName;
@@ -23,14 +24,6 @@ public class Device {
 
 	public void setDeviceSDK(int deviceSDK) {
 		this.deviceSDK = deviceSDK;
-	}
-
-	public String getDeviceUid() {
-		return deviceUid;
-	}
-
-	public void setDeviceUid(String deviceUid) {
-		this.deviceUid = deviceUid;
 	}
 
 	public String getDeviceModelName() {

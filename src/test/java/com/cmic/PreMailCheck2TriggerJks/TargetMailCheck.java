@@ -31,10 +31,10 @@ public class TargetMailCheck {
 	public void initCheck() throws IOException {
 		Properties pro = App.pro;
 		try {
-			System.err.println(pro.getProperty("MAIL_HOST_TYPE", "本地caonima"));
-			System.err.println(pro.getProperty("SENDER_GRANT_CODE", "本地caonima"));
-			System.err.println(pro.getProperty("RECEIVE_GRANT_CODE", "本地caonima"));
-			System.err.println(pro.getProperty("SENDER_MAIL", "本地caonima"));
+			LogUtil.w(pro.getProperty("MAIL_HOST_TYPE", "本地caonima"));
+			LogUtil.w(pro.getProperty("SENDER_GRANT_CODE", "本地caonima"));
+			LogUtil.w(pro.getProperty("RECEIVE_GRANT_CODE", "本地caonima"));
+			LogUtil.w(pro.getProperty("SENDER_MAIL", "本地caonima"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
