@@ -1,0 +1,11 @@
+#ConfigStartFromHere开始配置
+#自动化测试配置信息
+testBranch: mmnes1.5
+testDeviceList:
+  - deviceName: N3
+    deviceModelName: M850
+    deviceSDK: 26
+testSubscriber: 
+  - kiwi188141@163.com
+  - thisisforyou@126.com
+#ConfigEndInHere结束配置

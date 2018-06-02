@@ -464,7 +464,7 @@ public class ReceiveMailUtil {
 			return "";
 
 		if (pattern == null || "".equals(pattern))
-			pattern = "yyyy年MM月dd日 E HH:mm ";
+			pattern = "yyyy年MM月dd日HH时mm分";
 
 		return new SimpleDateFormat(pattern).format(receivedDate);
 	}
